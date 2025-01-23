@@ -11,4 +11,10 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    build: {
+        outDir: 'public/build', // ビルド出力先
+        assetsDir: 'assets',   // アセットディレクトリ
+        manifest: true,        // マニフェストファイルの生成
+        emptyOutDir: true,     // 古いビルドファイルを削除
+    },
 });
