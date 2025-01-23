@@ -12,6 +12,12 @@ class Authenticate extends Middleware
      */
     protected function redirectTo(Request $request): ?string
     {
+        // Breezeのログインルートに依存している部分をコメントアウト
+        /*
         return $request->expectsJson() ? null : route('login');
+        */
+
+        // 一時的なリダイレクトを設定
+        return $request->expectsJson() ? null : '/'; // ホームページや適切なデフォルトURLに変更してください
     }
 }
