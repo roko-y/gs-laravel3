@@ -22,24 +22,18 @@
     <main class="w-3/4 min-h-screen p-8">
         {{-- ページタイトル --}}
         <h2 class="text-2xl font-bold mb-4">
-            STEP1：課題を特定しよう！
+            課題を特定しよう！
         </h2>
-
-        {{-- 「＜ homeに戻る」リンク --}}
-        <a href="{{ route('welcome') }}" target="_blank" class="text-blue-500 hover:text-blue-700 underline mb-4 inline-block">
-            &lt; homeに戻る
-        </a>
-
-        {{-- チャットコンテンツ --}}
+        {{-- チャットコンテナ --}}
         <div class="chat-container bg-gray-50 p-4 rounded-lg shadow">
             {{-- 現在の質問を表示 --}}
             <div class="message">
-                <p><strong>質問:</strong> {{ $message->message_text }}</p>
+            <p><strong>質問:</strong>{{ $message->message_text }}</p>
             </div>
             {{-- 選択肢を表示 --}}
             <div id="options" class="mt-4 space-y-2">
                 @foreach ($options as $option)
-                    <button class="option-btn w-full text-left px-4 py-2 border border-gray-300 rounded-md"
+                    <button class="option-btn w-full text-left px-4 py-2 border border-gray-300 rounded-md" 
                             data-next-message-id="{{ $option->next_message_id }}">
                         {{ $option->option_text }}
                     </button>
@@ -50,35 +44,42 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function () {
     const optionsContainer = document.getElementById('options'); // 選択肢を含むコンテナ
 
+    /**
+     * ユーザーが選択肢ボタンをクリックした際の処理を設定。
+     * - `fetch`を使用してサーバーにリクエストを送信。
+     * - レスポンスデータをもとに次の質問と選択肢を更新。
+     */
     optionsContainer.addEventListener('click', function (event) {
-        if (event.target.classList.contains('option-btn')) { // 選択肢ボタンがクリックされた場合
+        if (event.target.classList.contains('option-btn')) { // ボタンがクリックされた場合のみ処理を実行
             const nextMessageId = event.target.getAttribute('data-next-message-id');
 
-            fetch('/chat/next', { // サーバーにPOSTリクエストを送信
+
+
+            fetch('/chat/next', {         // サーバーにPOSTリクエストを送信
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}' // LaravelのCSRFトークンを追加
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'        // LaravelのCSRFトークンを追加
                 },
-                body: JSON.stringify({ next_message_id: nextMessageId }) // リクエストデータをJSON形式で送信
+                body: JSON.stringify({ next_message_id: nextMessageId })   // リクエストデータをJSON形式で送信
             })
             .then(response => response.json())
             .then(data => {
-                if (data.error) { // サーバーからエラーが返された場合
-                    alert('エラー: ' + data.error);
+                if (data.error) {          // サーバーからエラーが返された場合
+                    alert('エラー'+data.error);
                     return;
                 }
 
-                // ユーザーの選択をチャット履歴に追加
+                // ユーザーの選択を履歴に追加
                 const userMessage = document.createElement('div');
                 userMessage.classList.add('message', 'user-message');
                 userMessage.textContent = event.target.textContent;
                 optionsContainer.insertAdjacentElement('beforebegin', userMessage);
 
-                // 次の質問をチャット履歴に追加
+                // 次の質問を表示
                 const nextMessage = document.createElement('div');
                 nextMessage.classList.add('message');
                 nextMessage.innerHTML = `<strong>質問:</strong> <p>${data.message}</p>`;
@@ -94,12 +95,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     optionsContainer.appendChild(button);
                 });
             })
-            .catch(error => {
-                console.error('通信エラー:', error); // 通信エラー時のログ出力
-                alert('通信に失敗しました。もう一度お試しください。');
-            });
+            .catch(error => console.error('Error:', error));
+            alert('通信に失敗しました。');
         }
     });
-});
 </script>
 @endsection

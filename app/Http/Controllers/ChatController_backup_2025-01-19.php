@@ -32,19 +32,14 @@ class ChatController extends Controller
     {
         // フォームから送信された次のメッセージIDを取得
         $nextMessageId = $request->input('next_message_id');
-
-        // メッセージIDが無効の場合、エラーを返す
-        if (!$nextMessageId) {
-            return response()->json(['error' => 'Invalid message ID'], 400);
-        }
-
-        // 'messages'テーブルから指定されたIDの質問を取得
+        
+        // 次のメッセージを取得
         $nextMessage = Message::find($nextMessageId);
+        
+        // 次のメッセージに関連する選択肢を取得
+        $options = Option::where('message_id', $nextMessage->id)->get();
 
-        // 次の質問に関連する選択肢を取得
-        $options = Option::where('message_id', $nextMessageId)->get();
-
-        // 次の質問と選択肢をJSON形式で返す
+        // 次のメッセージと選択肢をJSONレスポンスで返す
         return response()->json([
             'message' => $nextMessage->message_text,
             'options' => $options
