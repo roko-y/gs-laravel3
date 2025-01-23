@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProfileUpdateRequest;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 
@@ -14,26 +12,32 @@ class ProfileController extends Controller
     /**
      * Display the user's profile form.
      */
-    public function edit(Request $request): View
+    public function edit(): View
     {
+        // 仮のユーザー情報を渡す
+        $user = (object) [
+            'name' => 'Default User',          // デフォルトの名前
+            'email' => 'default@example.com', // デフォルトのメールアドレス
+        ];
+
         return view('profile.edit', [
-            'user' => $request->user(),
+            'user' => $user,
         ]);
     }
 
     /**
      * Update the user's profile information.
      */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function update(Request $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        // POSTデータを利用した仮の更新処理（実際には何も保存されない）
+        $updatedName = $request->input('name', 'Default User');
+        $updatedEmail = $request->input('email', 'default@example.com');
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
-        }
+        // デバッグ用にログを記録（必要に応じて削除）
+        \Log::info('Updated Profile', ['name' => $updatedName, 'email' => $updatedEmail]);
 
-        $request->user()->save();
-
+        // 成功メッセージをセッションに保存してリダイレクト
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
@@ -42,19 +46,9 @@ class ProfileController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-        $request->validateWithBag('userDeletion', [
-            'password' => ['required', 'current_password'],
-        ]);
+        // 仮の削除処理（実際には何も削除されない）
+        \Log::info('Account deletion attempted.');
 
-        $user = $request->user();
-
-        Auth::logout();
-
-        $user->delete();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return Redirect::to('/');
+        return Redirect::to('/')->with('status', 'account-deleted');
     }
 }
